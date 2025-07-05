@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Two Pointer",
+    "description": "Use two indices moving towards each other.",
+    "code": "left, right = 0, len(arr)-1\nwhile left < right:\n  # process",
+    "tags": ["array", "two pointers", "sliding window"]
+  },
+  {
+    "name": "Sliding Window",
+    "description": "Maintain a dynamic window over array.",
+    "code": "start=0\nfor end in range(len(arr)):\n  # expand/shrink window",
+    "tags": ["array", "sliding window"]
+  }
+]
