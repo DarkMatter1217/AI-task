@@ -31,7 +31,7 @@ def get_week_seed():
     """Generate a seed based on current week - changes every week"""
     today = datetime.date.today()
     year, week, _ = today.isocalendar()
-    return int(f"{year}{week:02d}")
+    return week
 
 def get_daily_seed():
     """Generate a seed based on current day - changes daily"""
