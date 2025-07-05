@@ -1,13 +1,31 @@
-# requirements-minimal.txt - Ultra-safe for Streamlit Cloud
+# requirements.txt - Python 3.13 Compatible Version
 
+# Core Framework
 streamlit>=1.28.0
-langchain==0.2.16
-langchain-google-genai==1.0.8
-google-generativeai==0.7.2
-sentence-transformers==2.7.0
-faiss-cpu==1.8.0
-pandas==2.0.3
-plotly==5.17.0
-numpy==1.24.4
-requests==2.31.0
-python-dotenv==1.0.1
+
+# AI & LangChain - Latest compatible versions
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-google-genai>=2.0.0
+google-generativeai>=0.8.0
+
+# Machine Learning - Python 3.13 compatible
+sentence-transformers>=3.0.0
+transformers>=4.40.0
+
+# Vector Search - Pre-built wheels available
+faiss-cpu>=1.8.0
+numpy>=1.26.0
+
+# Data Processing - Latest versions
+pandas>=2.1.0
+plotly>=5.17.0
+
+# HTTP & Utilities
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Essential only - no version pins
+pyyaml
+python-dateutil
+sqlalchemy
