@@ -100,7 +100,6 @@ streamlit run app.py
 
 - [ ] OAuth login + persistent progress
 - [ ] Export feedback to PDF/Markdown
-- [ ] Live code autocomplete
 - [ ] Model selector (Gemini / Claude / Perplexity)
 
 ---
