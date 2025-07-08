@@ -9,7 +9,8 @@ import plotly.graph_objects as go
 import random
 import datetime
 import hashlib
-
+import os
+os.environ["GOOGLE_API_KEY"]=st.secrets["GOOGLE_API_KEY"]
 st.title("🎯 Personalized Learning Recommendations")
 
 # Initialize session
