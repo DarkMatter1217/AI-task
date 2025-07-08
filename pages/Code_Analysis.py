@@ -166,11 +166,37 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
                 st.metric("Lines", technical_analysis.get('quality_metrics', {}).get('lines', len(code_input.splitlines())))
             if 'code_structure' in technical_analysis:
                 st.json(technical_analysis['code_structure'])
-
         with tab3:
-            st.markdown("### 🔍 Pattern Analysis")
+            st.markdown("## 🧠 Pattern Analysis")
+
             if pattern_analysis:
-                st.markdown(pattern_analysis,unsafe_allow_html=True)
+                import re
+
+                # Split by custom headers or markers like "###"
+                sections = re.split(r"(###.*)", pattern_analysis)
+                rendered = []
+
+                for i in range(1, len(sections), 2):
+                    header = sections[i].strip()
+                    body = sections[i+1].strip() if i+1 < len(sections) else ""
+
+                    # Assign emoji + header formatting
+                    if "Primary Pattern" in header:
+                        emoji = "🔍"
+                    elif "Usage Quality" in header:
+                        emoji = "🧪"
+                    elif "Alternative" in header:
+                        emoji = "🔁"
+                    elif "Optimizations" in header:
+                        emoji = "🚀"
+                    elif "Related" in header:
+                        emoji = "🔗"
+                    else:
+                        emoji = "🔸"
+
+                    st.markdown(f"### {emoji} {header.replace('###', '').strip()}")
+                    st.markdown(body)
+
             else:
                 st.info("No pattern feedback generated.")
 
