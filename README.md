@@ -3,6 +3,7 @@
 
 An AI-powered coding assistant built with Streamlit and Gemini 2.5 Flash, designed to provide intelligent feedback on code solutions, recognize algorithmic patterns, track user progress, and recommend personalized learning paths.
 
+https://codebuddy69.streamlit.app/
 ---
 
 ## 📁 Project Structure
