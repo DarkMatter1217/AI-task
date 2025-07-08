@@ -104,7 +104,3 @@ streamlit run app.py
 - [ ] Model selector (Gemini / Claude / Perplexity)
 
 ---
-
-## 📜 License
-
-MIT License © 2025
