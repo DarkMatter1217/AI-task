@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 import random
 import datetime
 import hashlib
-
+import os
 st.title("🎯 Personalized Learning Recommendations")
 
 # Initialize session

@@ -7,6 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from dotenv import load_dotenv
 import datetime
 from typing import Optional
+import os
 
 load_dotenv()
 
