@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import datetime
 from typing import Optional
 import os
-os.environ["GOOGLE_API_KEY"]=st.secrets["GOOGLE_API_KEY"]
+
 load_dotenv()
 
 class LangChainGeminiClient:

@@ -7,9 +7,7 @@ import uuid
 from utils.code_analyzer import analyze_code
 from utils.database import get_database
 from utils.vector_store import get_vector_store
-import os
 from utils.langchain_gemini_client import get_langchain_gemini_client
-os.environ["GOOGLE_API_KEY"]=st.secrets["GOOGLE_API_KEY"]
 
 st.title("📝 Code Analysis with AI Mentor")
 
