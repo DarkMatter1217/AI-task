@@ -496,55 +496,6 @@ Timeline: {st.session_state.user_profile.get('target_timeline', 'Not specified')
     # Show generation info
     if st.session_state.plan_generated_date:
         st.caption(f"📅 Generated on: {st.session_state.plan_generated_date}")
-
-# Progress Tracking Section
-st.subheader("📈 Progress Tracking")
-
-try:
-    progress_data = db.get_progress_data(st.session_state.session_id)
-except Exception as e:
-    st.error(f"Progress data error: {e}")
-    progress_data = pd.DataFrame()
-
-if not progress_data.empty:
-    # Progress over time
-    if 'date' in progress_data.columns and 'success_rate' in progress_data.columns:
-        fig = px.line(
-            progress_data, x='date', y='success_rate', color='difficulty',
-            title='Learning Progress Over Time',
-            labels={'success_rate': 'Success Rate (%)', 'date': 'Date'}
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Problems by topic
-    if 'topic' in progress_data.columns and 'problems_solved' in progress_data.columns:
-        topic_counts = progress_data.groupby('topic')['problems_solved'].sum().reset_index()
-        fig2 = px.bar(
-            topic_counts, x='topic', y='problems_solved',
-            title='Problems Solved by Topic',
-            labels={'problems_solved': 'Problems Solved', 'topic': 'Topic'}
-        )
-        fig2.update_xaxes(tickangle=45)
-        st.plotly_chart(fig2, use_container_width=True)
-    
-    # Radar chart
-    if skill_ratings:
-        fig_radar = go.Figure()
-        fig_radar.add_trace(go.Scatterpolar(
-            r=list(skill_ratings.values()),
-            theta=list(skill_ratings.keys()),
-            fill='toself',
-            name='Current Level'
-        ))
-        fig_radar.update_layout(
-            polar=dict(radialaxis=dict(range=[0, 5])),
-            showlegend=False,
-            title="Skill Assessment Radar"
-        )
-        st.plotly_chart(fig_radar, use_container_width=True)
-else:
-    st.info("📊 No progress data yet. Click 'Add Sample Data' to see demo charts!")
-
 # Enhanced fallback problems database
 def get_all_fallback_problems():
     """Get complete problem database for randomization"""
