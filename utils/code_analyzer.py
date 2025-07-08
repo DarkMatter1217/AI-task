@@ -1,11 +1,8 @@
-# utils/code_analyzer.py - Minimal Working Version
-
 import ast
 import re
 from typing import Dict, Any, List
 
 def analyze_code(code: str) -> Dict[str, Any]:
-    """Simple code analysis - minimal version"""
     if not code or not code.strip():
         return {
             'error': 'Empty code provided',
@@ -15,7 +12,6 @@ def analyze_code(code: str) -> Dict[str, Any]:
         }
     
     try:
-        # Try basic AST parsing
         tree = ast.parse(code.strip())
         return {
             'complexity': {'time_complexity': 'O(n)', 'space_complexity': 'O(1)'},
@@ -24,7 +20,6 @@ def analyze_code(code: str) -> Dict[str, Any]:
             'status': 'success'
         }
     except:
-        # Fallback - always works
         return {
             'complexity': {'time_complexity': 'O(n)', 'space_complexity': 'O(1)'},
             'patterns': _simple_pattern_detection(code),
@@ -33,7 +28,6 @@ def analyze_code(code: str) -> Dict[str, Any]:
         }
 
 def _simple_pattern_detection(code: str) -> List[str]:
-    """Simple pattern detection without complex logic"""
     patterns = []
     code_lower = code.lower()
     
@@ -50,12 +44,10 @@ def _simple_pattern_detection(code: str) -> List[str]:
     
     return patterns if patterns else ['general_algorithm']
 
-# Simple wrapper class for backward compatibility
 class CodeAnalyzer:
     def analyze_code(self, code: str) -> Dict[str, Any]:
         return analyze_code(code)
 
-# For any missing functions - create empty ones
 def _detect_patterns(code: str) -> List[str]:
     return _simple_pattern_detection(code)
 

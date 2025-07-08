@@ -1,4 +1,3 @@
-# pages/02_📝_Code_Analysis.py
 import streamlit as st
 import json
 import pandas as pd
@@ -17,7 +16,6 @@ if 'session_id' not in st.session_state:
 if 'analysis_history' not in st.session_state:
     st.session_state.analysis_history = []
 
-# UI: Input form
 col1, col2 = st.columns([2, 1])
 
 with col1:
@@ -34,17 +32,14 @@ with col2:
     problem_url = st.text_input("Problem URL (optional)")
     analysis_mode = st.selectbox("Analysis Mode", ["Fast", "Balanced", "Comprehensive"])
 
-# Analysis config
 st.subheader("🔧 Analysis Options")
 a1, a2, a3 = st.columns(3)
 with a1: enable_pattern_detection = st.checkbox("🔍 Pattern Detection", value=True)
 with a2: enable_complexity_analysis = st.checkbox("📊 Complexity Analysis", value=True)
 with a3: enable_similarity_search = st.checkbox("🔗 Similar Solutions", value=True)
 
-# 🧠 AI Reasoning Depth (Fixed for quality)
-thinking_budget = 2048  # Always use max for full detailed output
+thinking_budget = 2048
 
-# Load services
 try:
     db = get_database()
     vector_store = get_vector_store()
@@ -54,7 +49,6 @@ except Exception as e:
     st.error(f"❌ Error loading services: {e}")
     services_loaded = False
 
-# MAIN BUTTON
 if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
     if not services_loaded:
         st.error("❌ Services failed to load. Refresh and try again.")
@@ -69,7 +63,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
     status = st.empty()
 
     try:
-        # Step 1: Technical analysis
         status.text("Step 1/4: Technical analysis...")
         progress_bar.progress(25)
         technical_analysis = analyze_code(code_input)
@@ -82,7 +75,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
                 'quality_metrics': {'lines': len(code_input.splitlines()), 'characters': len(code_input)}
             })
 
-        # Step 2: Pattern Detection
         pattern_analysis = ""
         if enable_pattern_detection:
             status.text("Step 2/4: Detecting patterns...")
@@ -97,7 +89,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
                 st.warning(f"⚠️ Pattern analysis failed: {e}")
                 pattern_analysis = f"⚠️ Could not analyze patterns. Exception: {str(e)}"
 
-        # Step 3: Similarity Search
         similar_solutions = []
         if enable_similarity_search:
             status.text("Step 3/4: Finding similar solutions...")
@@ -107,7 +98,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
             except Exception as e:
                 st.warning(f"Similarity search failed: {e}")
 
-        # Step 4: AI Feedback
         status.text("Step 4/4: Generating AI feedback...")
         progress_bar.progress(90)
 
@@ -136,7 +126,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
         status.empty()
         st.success("✅ Code analyzed successfully!")
 
-        # Save to DB
         try:
             db.save_submission(
                 st.session_state.session_id,
@@ -148,7 +137,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
         except Exception as e:
             st.warning(f"DB save failed: {e}")
 
-        # DISPLAY TABS
         tab1, tab2, tab3, tab4 = st.tabs(["🎯 AI Feedback", "📊 Technical", "🔍 Patterns", "🔗 Similar"])
 
         with tab1:
@@ -172,7 +160,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
             if pattern_analysis:
                 import re
 
-                # Split by custom headers or markers like "###"
                 sections = re.split(r"(###.*)", pattern_analysis)
                 rendered = []
 
@@ -180,7 +167,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
                     header = sections[i].strip()
                     body = sections[i+1].strip() if i+1 < len(sections) else ""
 
-                    # Assign emoji + header formatting
                     if "Primary Pattern" in header:
                         emoji = "🔍"
                     elif "Usage Quality" in header:
@@ -211,7 +197,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
             else:
                 st.info("No similar solutions found.")
 
-        # History
         st.session_state.analysis_history.append({
             "problem_name": problem_name.strip(),
             "code_preview": code_input[:100] + "..." if len(code_input) > 100 else code_input,
@@ -223,7 +208,6 @@ if st.button("🚀 Analyze Code", type="primary", use_container_width=True):
     except Exception as e:
         st.error(f"❌ Full analysis failed: {e}")
 
-# History
 if st.session_state.analysis_history:
     st.markdown("---")
     st.subheader("📚 Recent Analyses")

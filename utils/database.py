@@ -1,4 +1,3 @@
-# utils/database.py
 import sqlite3
 import streamlit as st
 import pandas as pd
@@ -15,14 +14,12 @@ class DatabaseManager:
         self.init_database()
 
     def init_database(self):
-        """Initialize database with proper schema"""
         import os
         os.makedirs("data", exist_ok=True)
         
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         
-        # Create user_sessions table
         c.execute("""
         CREATE TABLE IF NOT EXISTS user_sessions (
             session_id TEXT PRIMARY KEY,
@@ -30,7 +27,6 @@ class DatabaseManager:
             user_data TEXT
         )""")
         
-        # Create submissions table (without difficulty column)
         c.execute("""
         CREATE TABLE IF NOT EXISTS submissions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +38,6 @@ class DatabaseManager:
             submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )""")
         
-        # Create progress table (with difficulty column)
         c.execute("""
         CREATE TABLE IF NOT EXISTS progress (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +49,6 @@ class DatabaseManager:
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )""")
         
-        # Create learning_plans table
         c.execute("""
         CREATE TABLE IF NOT EXISTS learning_plans (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +62,6 @@ class DatabaseManager:
 
     def save_submission(self, session_id: str, problem_name: str,
                         code: str, analysis: Dict[str, Any], feedback: str):
-        """Save code submission and analysis"""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute("""
@@ -80,7 +73,6 @@ class DatabaseManager:
         conn.close()
 
     def get_recent_submissions(self, session_id: str, limit: int = 5) -> pd.DataFrame:
-        """Get recent submissions"""
         conn = sqlite3.connect(self.db_path)
         try:
             df = pd.read_sql_query("""
@@ -95,7 +87,6 @@ class DatabaseManager:
             return pd.DataFrame()
 
     def get_progress_data(self, session_id: str) -> pd.DataFrame:
-        """Get progress data with proper date formatting"""
         conn = sqlite3.connect(self.db_path)
         try:
             df = pd.read_sql_query("""
@@ -117,22 +108,18 @@ class DatabaseManager:
             return pd.DataFrame()
 
     def get_user_statistics(self, session_id: str) -> Dict[str, Any]:
-        """Get comprehensive user statistics - FIXED VERSION"""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         
         try:
-            # Get total problems solved
             c.execute("SELECT COUNT(*) FROM submissions WHERE session_id = ?", (session_id,))
             total_problems = c.fetchone()[0]
             
-            # Get success rate (simulate improvement based on submissions)
             if total_problems > 0:
-                success_rate = min(100.0, 60 + (total_problems * 3))  # Simulate improvement
+                success_rate = min(100.0, 60 + (total_problems * 3))
             else:
                 success_rate = 0.0
             
-            # Get average difficulty from PROGRESS table (not submissions)
             c.execute("""
             SELECT difficulty, COUNT(*) as count 
             FROM progress 
@@ -141,19 +128,16 @@ class DatabaseManager:
             
             difficulty_counts = c.fetchall()
             if difficulty_counts:
-                # Get most common difficulty
                 avg_difficulty = max(difficulty_counts, key=lambda x: x[1])[0]
             else:
                 avg_difficulty = "N/A"
             
-            # Get this week's submissions
             c.execute("""
             SELECT COUNT(*) FROM submissions 
             WHERE session_id = ? AND submitted_at >= date('now', '-7 days')""", (session_id,))
             this_week = c.fetchone()[0]
             
-            # Calculate current streak (simplified)
-            current_streak = min(total_problems, this_week + 2)  # Simulate streak
+            current_streak = min(total_problems, this_week + 2)
             
             conn.close()
             
@@ -167,7 +151,6 @@ class DatabaseManager:
             
         except Exception as e:
             conn.close()
-            # Return default values if any error
             return {
                 'total_problems': 0,
                 'success_rate': 0.0,
@@ -177,7 +160,6 @@ class DatabaseManager:
             }
 
     def save_learning_plan(self, session_id: str, plan_text: str):
-        """Save a learning plan for the user"""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         c.execute("""
@@ -187,15 +169,12 @@ class DatabaseManager:
         conn.close()
 
     def add_sample_data(self, session_id: str):
-        """Add comprehensive sample data with proper schema"""
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
         
-        # Clear existing data
         c.execute("DELETE FROM submissions WHERE session_id = ?", (session_id,))
         c.execute("DELETE FROM progress WHERE session_id = ?", (session_id,))
         
-        # Sample submissions (without difficulty)
         sample_submissions = [
             ("Two Sum", "def twoSum(nums, target):\n    d = {}\n    for i, n in enumerate(nums):\n        if target - n in d:\n            return [d[target - n], i]\n        d[n] = i"),
             ("Three Sum", "def threeSum(nums):\n    nums.sort()\n    result = []\n    # implementation\n    return result"),
@@ -207,7 +186,6 @@ class DatabaseManager:
             ("Merge Two Lists", "def mergeTwoLists(l1, l2):\n    dummy = ListNode(0)\n    # merge logic\n    return dummy.next")
         ]
         
-        # Insert submissions
         for i, (problem, code) in enumerate(sample_submissions):
             timestamp = (datetime.now() - timedelta(days=i)).isoformat()
             c.execute("""
@@ -217,7 +195,6 @@ class DatabaseManager:
              '{"complexity": {"time_complexity": "O(n)", "space_complexity": "O(1)"}, "patterns": ["algorithm"]}',
              f"Great solution for {problem}! Your implementation shows good understanding.", timestamp))
         
-        # Sample progress data (with difficulty)
         sample_progress = [
             ('Array/String Manipulation', 'Easy', 85.0, 8, 1),
             ('Array/String Manipulation', 'Medium', 70.0, 4, 2),

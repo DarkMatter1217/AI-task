@@ -1,4 +1,3 @@
-# utils/__init__.py
 from .code_analyzer import analyze_code
 from .database import get_database, DatabaseManager
 from .leetcode_client import LeetCodeClient

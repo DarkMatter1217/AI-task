@@ -1,12 +1,9 @@
-# streamlit_app.py
 import streamlit as st
 import sys
 from pathlib import Path
 
-# Add utils to path for imports
 sys.path.append(str(Path(__file__).parent))
 
-# Set page config first
 st.set_page_config(
     page_title="AI Coding Mentor",
     page_icon="🤖",
@@ -14,16 +11,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Import after page config
 from utils.database import get_database
 from utils.langchain_gemini_client import get_langchain_gemini_client
 
-# Initialize session state
 if 'session_id' not in st.session_state:
     import uuid
     st.session_state.session_id = str(uuid.uuid4())
 
-# Main page content
 st.title("🤖 AI Coding Mentor")
 st.markdown("Your Personalized AI Coach for Coding Interview Success")
 
@@ -45,7 +39,6 @@ Use the sidebar to navigate between different features:
 Ready to level up your coding skills? Let's begin! 🚀
 """)
 
-# Test connections
 try:
     db = get_database()
     st.success("✅ Database connection ready")

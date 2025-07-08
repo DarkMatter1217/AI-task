@@ -1,4 +1,3 @@
-# pages/04_🎯_Recommendations.py - Complete Enhanced Version with AI Generation
 import streamlit as st
 from utils.langchain_gemini_client import get_langchain_gemini_client
 from utils.database import get_database
@@ -12,7 +11,6 @@ import hashlib
 import os
 st.title("🎯 Personalized Learning Recommendations")
 
-# Initialize session
 if 'session_id' not in st.session_state:
     import uuid
     st.session_state.session_id = str(uuid.uuid4())
@@ -26,34 +24,27 @@ if 'problem_shuffle_seed' not in st.session_state:
 if 'plan_generated_date' not in st.session_state:
     st.session_state.plan_generated_date = None
 
-# Randomization Utility Functions
 def get_week_seed():
-    """Generate a seed based on current week - changes every week"""
     today = datetime.date.today()
     year, week, _ = today.isocalendar()
     return week
 
 def get_daily_seed():
-    """Generate a seed based on current day - changes daily"""
     today = datetime.date.today()
     return int(today.strftime("%Y%m%d"))
 
 def get_session_seed(session_id):
-    """Generate a consistent seed for this session"""
     return int(hashlib.md5(session_id.encode()).hexdigest()[:8], 16)
 
 def get_random_problems(problem_list, n=5, seed=None, shuffle_override=False):
-    """Return n random problems from a list with optional seeding"""
     if not problem_list:
         return []
     
-    # Use shuffle override seed if available
     if shuffle_override and st.session_state.get('problem_shuffle_seed'):
         seed = st.session_state.problem_shuffle_seed
     elif seed is None:
         seed = get_week_seed()
     
-    # Set random seed for consistent results
     random.seed(seed)
     
     if len(problem_list) <= n:
@@ -64,11 +55,9 @@ def get_random_problems(problem_list, n=5, seed=None, shuffle_override=False):
     return random.sample(problem_list, n)
 
 def shuffle_problems():
-    """Generate new shuffle seed and refresh page"""
     st.session_state.problem_shuffle_seed = random.randint(1, 1000000)
     st.rerun()
 
-# Initialize services
 try:
     llm_client = get_langchain_gemini_client()
     db = get_database()
@@ -78,7 +67,6 @@ except Exception as e:
     st.error(f"Service initialization failed: {e}")
     services_loaded = False
 
-# Debug Section in Sidebar
 st.sidebar.markdown("### 🔧 Quick Actions")
 col1, col2 = st.sidebar.columns(2)
 
@@ -106,7 +94,6 @@ with col2:
         except Exception as e:
             st.sidebar.error(f"Error: {e}")
 
-# Randomization Controls
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎲 Problem Randomization")
 
@@ -120,20 +107,17 @@ if st.sidebar.button("🗓️ Reset to Weekly Default"):
     st.session_state.problem_shuffle_seed = None
     st.rerun()
 
-# Show current randomization status
 if st.session_state.get('problem_shuffle_seed'):
     st.sidebar.info("🎲 Using shuffled problems")
 else:
     st.sidebar.info("📅 Using weekly default problems")
 
-# User Profile Section
 st.subheader("👤 Your Learning Profile")
 profile_col1, profile_col2 = st.columns(2)
 
 with profile_col1:
     st.markdown("### 📊 Current Status")
     
-    # Get user statistics with error handling
     try:
         user_stats = db.get_user_statistics(st.session_state.session_id)
     except Exception as e:
@@ -169,7 +153,6 @@ with profile_col2:
         "1 month", "3 months", "6 months", "1 year"
     ])
 
-# Skill Assessment
 st.subheader("🔍 Skill Assessment")
 skill_areas = [
     "Array/String Manipulation", "Linked Lists", "Trees & Graphs",
@@ -190,17 +173,13 @@ for i, skill in enumerate(skill_areas):
 strong_areas = [s for s, r in skill_ratings.items() if r >= 4]
 weak_areas = [s for s, r in skill_ratings.items() if r <= 2]
 
-# Enhanced user data collection
 def collect_enhanced_user_data():
-    """Collect comprehensive user data for AI plan generation"""
     
-    # Get basic stats
     try:
         recent_submissions = db.get_recent_submissions(st.session_state.session_id, 5)
     except:
         recent_submissions = pd.DataFrame()
     
-    # Experience assessment
     problems_solved = user_stats.get('total_problems', 0)
     
     if problems_solved == 0:
@@ -229,18 +208,14 @@ def collect_enhanced_user_data():
         'user_id': st.session_state.session_id
     }
 
-# Enhanced Fallback Plan Generator
 def generate_enhanced_fallback_plan(user_data):
-    """Generate comprehensive fallback plan with actual question links"""
     problems_solved = user_data.get('problems_solved', 0)
     weak_areas = user_data.get('weak_areas', [])
     target_goal = user_data.get('target_goal', 'Interview Preparation')
     time_per_day = user_data.get('time_per_day', 60)
     
-    # Determine if beginner
     is_beginner = problems_solved < 10
     
-    # Get current week
     current_week = get_week_seed()
     
     if is_beginner:
@@ -325,7 +300,6 @@ Once you complete this week comfortably:
 *🎓 This plan is specifically designed for coding beginners. Focus on understanding over speed!*
 """
     else:
-        # Intermediate/Advanced plan
         focus_area = weak_areas[0] if weak_areas else "Dynamic Programming"
         
         return f"""
@@ -409,14 +383,11 @@ Once you complete this week comfortably:
 *🎓 This plan adapts to your current skill level. Adjust difficulty as needed!*
 """
 
-# Generate Learning Plan with Enhanced AI Integration
 if st.button("🚀 Generate My AI Learning Plan", type="primary"):
     with st.spinner("🧠 AI is analyzing your data and creating a personalized plan with question links..."):
         
-        # Collect enhanced user data
         user_data = collect_enhanced_user_data()
         
-        # Show what data AI is using
         with st.expander("🔍 Data Being Used for AI Plan Generation"):
             st.markdown(f"**Experience Level**: {user_data['experience_note']}")
             st.markdown(f"**Problems Solved**: {user_data['problems_solved']}")
@@ -427,14 +398,12 @@ if st.button("🚀 Generate My AI Learning Plan", type="primary"):
         
         try:
             if services_loaded:
-                # Generate AI plan with enhanced data
                 learning_plan = llm_client.generate_learning_path(user_data)
                 st.session_state.learning_plan = learning_plan
                 st.session_state.user_profile = user_data
                 st.session_state.plan_generated_date = pd.Timestamp.now().strftime('%Y-%m-%d')
                 st.success("✅ Your personalized AI learning plan with question links is ready!")
             else:
-                # Use enhanced fallback
                 learning_plan = generate_enhanced_fallback_plan(user_data)
                 st.session_state.learning_plan = learning_plan
                 st.session_state.user_profile = user_data
@@ -443,23 +412,19 @@ if st.button("🚀 Generate My AI Learning Plan", type="primary"):
                 
         except Exception as e:
             st.warning(f"AI service error: {e}")
-            # Fallback with user data
             learning_plan = generate_enhanced_fallback_plan(user_data)
             st.session_state.learning_plan = learning_plan
             st.session_state.user_profile = user_data
             st.session_state.plan_generated_date = pd.Timestamp.now().strftime('%Y-%m-%d')
             st.success("✅ Backup plan generated with your preferences!")
 
-# Display Learning Plan
 if st.session_state.learning_plan:
     st.subheader("📚 Your Personalized Learning Plan")
     st.markdown(st.session_state.learning_plan)
     
-    # Weekly regeneration prompt
     st.markdown("---")
     st.info("💡 **Weekly Tip**: Generate a new plan every Monday for fresh problems and updated difficulty!")
     
-    # Action buttons
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         if st.button("💾 Save Plan"):
@@ -493,32 +458,26 @@ Timeline: {st.session_state.user_profile.get('target_timeline', 'Not specified')
                 mime="text/plain"
             )
     
-    # Show generation info
     if st.session_state.plan_generated_date:
         st.caption(f"📅 Generated on: {st.session_state.plan_generated_date}")
-# Enhanced fallback problems database
+
 def get_all_fallback_problems():
-    """Get complete problem database for randomization"""
     return [
-        # Array/String Manipulation - Beginner
         {"id": "1", "title": "Two Sum", "difficulty": "Easy", "category": "Array/String", "url": "https://leetcode.com/problems/two-sum/"},
         {"id": "26", "title": "Remove Duplicates from Sorted Array", "difficulty": "Easy", "category": "Array/String", "url": "https://leetcode.com/problems/remove-duplicates-from-sorted-array/"},
         {"id": "27", "title": "Remove Element", "difficulty": "Easy", "category": "Array/String", "url": "https://leetcode.com/problems/remove-element/"},
         {"id": "283", "title": "Move Zeroes", "difficulty": "Easy", "category": "Array/String", "url": "https://leetcode.com/problems/move-zeroes/"},
         {"id": "121", "title": "Best Time to Buy and Sell Stock", "difficulty": "Easy", "category": "Array/String", "url": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/"},
         
-        # Array/String Manipulation - Intermediate
         {"id": "122", "title": "Best Time to Buy and Sell Stock II", "difficulty": "Medium", "category": "Array/String", "url": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/"},
         {"id": "53", "title": "Maximum Subarray", "difficulty": "Medium", "category": "Array/String", "url": "https://leetcode.com/problems/maximum-subarray/"},
         {"id": "15", "title": "3Sum", "difficulty": "Medium", "category": "Array/String", "url": "https://leetcode.com/problems/3sum/"},
         {"id": "238", "title": "Product of Array Except Self", "difficulty": "Medium", "category": "Array/String", "url": "https://leetcode.com/problems/product-of-array-except-self/"},
         {"id": "11", "title": "Container With Most Water", "difficulty": "Medium", "category": "Array/String", "url": "https://leetcode.com/problems/container-with-most-water/"},
         
-        # Dynamic Programming - Beginner
         {"id": "70", "title": "Climbing Stairs", "difficulty": "Easy", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/climbing-stairs/"},
         {"id": "746", "title": "Min Cost Climbing Stairs", "difficulty": "Easy", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/min-cost-climbing-stairs/"},
         
-        # Dynamic Programming - Intermediate/Advanced
         {"id": "198", "title": "House Robber", "difficulty": "Medium", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/house-robber/"},
         {"id": "213", "title": "House Robber II", "difficulty": "Medium", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/house-robber-ii/"},
         {"id": "322", "title": "Coin Change", "difficulty": "Medium", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/coin-change/"},
@@ -527,7 +486,6 @@ def get_all_fallback_problems():
         {"id": "62", "title": "Unique Paths", "difficulty": "Medium", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/unique-paths/"},
         {"id": "72", "title": "Edit Distance", "difficulty": "Hard", "category": "Dynamic Programming", "url": "https://leetcode.com/problems/edit-distance/"},
         
-        # Linked Lists
         {"id": "206", "title": "Reverse Linked List", "difficulty": "Easy", "category": "Linked Lists", "url": "https://leetcode.com/problems/reverse-linked-list/"},
         {"id": "21", "title": "Merge Two Sorted Lists", "difficulty": "Easy", "category": "Linked Lists", "url": "https://leetcode.com/problems/merge-two-sorted-lists/"},
         {"id": "141", "title": "Linked List Cycle", "difficulty": "Easy", "category": "Linked Lists", "url": "https://leetcode.com/problems/linked-list-cycle/"},
@@ -535,7 +493,6 @@ def get_all_fallback_problems():
         {"id": "2", "title": "Add Two Numbers", "difficulty": "Medium", "category": "Linked Lists", "url": "https://leetcode.com/problems/add-two-numbers/"},
         {"id": "19", "title": "Remove Nth Node From End of List", "difficulty": "Medium", "category": "Linked Lists", "url": "https://leetcode.com/problems/remove-nth-node-from-end-of-list/"},
         
-        # Trees & Graphs
         {"id": "94", "title": "Binary Tree Inorder Traversal", "difficulty": "Easy", "category": "Trees & Graphs", "url": "https://leetcode.com/problems/binary-tree-inorder-traversal/"},
         {"id": "104", "title": "Maximum Depth of Binary Tree", "difficulty": "Easy", "category": "Trees & Graphs", "url": "https://leetcode.com/problems/maximum-depth-of-binary-tree/"},
         {"id": "226", "title": "Invert Binary Tree", "difficulty": "Easy", "category": "Trees & Graphs", "url": "https://leetcode.com/problems/invert-binary-tree/"},
@@ -543,59 +500,48 @@ def get_all_fallback_problems():
         {"id": "200", "title": "Number of Islands", "difficulty": "Medium", "category": "Trees & Graphs", "url": "https://leetcode.com/problems/number-of-islands/"},
         {"id": "133", "title": "Clone Graph", "difficulty": "Medium", "category": "Trees & Graphs", "url": "https://leetcode.com/problems/clone-graph/"},
         
-        # Two Pointers
         {"id": "125", "title": "Valid Palindrome", "difficulty": "Easy", "category": "Two Pointers", "url": "https://leetcode.com/problems/valid-palindrome/"},
         {"id": "167", "title": "Two Sum II - Input Array Is Sorted", "difficulty": "Medium", "category": "Two Pointers", "url": "https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/"},
         {"id": "42", "title": "Trapping Rain Water", "difficulty": "Hard", "category": "Two Pointers", "url": "https://leetcode.com/problems/trapping-rain-water/"},
         
-        # Sliding Window
         {"id": "3", "title": "Longest Substring Without Repeating Characters", "difficulty": "Medium", "category": "Sliding Window", "url": "https://leetcode.com/problems/longest-substring-without-repeating-characters/"},
         {"id": "76", "title": "Minimum Window Substring", "difficulty": "Hard", "category": "Sliding Window", "url": "https://leetcode.com/problems/minimum-window-substring/"},
         {"id": "209", "title": "Minimum Size Subarray Sum", "difficulty": "Medium", "category": "Sliding Window", "url": "https://leetcode.com/problems/minimum-size-subarray-sum/"},
         {"id": "424", "title": "Longest Repeating Character Replacement", "difficulty": "Medium", "category": "Sliding Window", "url": "https://leetcode.com/problems/longest-repeating-character-replacement/"},
         
-        # Binary Search
         {"id": "704", "title": "Binary Search", "difficulty": "Easy", "category": "Sorting & Searching", "url": "https://leetcode.com/problems/binary-search/"},
         {"id": "35", "title": "Search Insert Position", "difficulty": "Easy", "category": "Sorting & Searching", "url": "https://leetcode.com/problems/search-insert-position/"},
         {"id": "33", "title": "Search in Rotated Sorted Array", "difficulty": "Medium", "category": "Sorting & Searching", "url": "https://leetcode.com/problems/search-in-rotated-sorted-array/"},
         {"id": "153", "title": "Find Minimum in Rotated Sorted Array", "difficulty": "Medium", "category": "Sorting & Searching", "url": "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/"},
         
-        # Backtracking
         {"id": "46", "title": "Permutations", "difficulty": "Medium", "category": "Backtracking", "url": "https://leetcode.com/problems/permutations/"},
         {"id": "78", "title": "Subsets", "difficulty": "Medium", "category": "Backtracking", "url": "https://leetcode.com/problems/subsets/"},
         {"id": "39", "title": "Combination Sum", "difficulty": "Medium", "category": "Backtracking", "url": "https://leetcode.com/problems/combination-sum/"},
         {"id": "17", "title": "Letter Combinations of a Phone Number", "difficulty": "Medium", "category": "Backtracking", "url": "https://leetcode.com/problems/letter-combinations-of-a-phone-number/"},
         
-        # Greedy Algorithms
         {"id": "55", "title": "Jump Game", "difficulty": "Medium", "category": "Greedy Algorithms", "url": "https://leetcode.com/problems/jump-game/"},
         {"id": "45", "title": "Jump Game II", "difficulty": "Medium", "category": "Greedy Algorithms", "url": "https://leetcode.com/problems/jump-game-ii/"},
         {"id": "134", "title": "Gas Station", "difficulty": "Medium", "category": "Greedy Algorithms", "url": "https://leetcode.com/problems/gas-station/"},
     ]
 
 def get_fallback_problems(category):
-    """Get problems for specific category with randomization"""
     all_problems = get_all_fallback_problems()
     
     if category == "general":
-        # Mix of easy problems from all categories
         easy_problems = [p for p in all_problems if p["difficulty"] == "Easy"]
         return get_random_problems(easy_problems, n=8, shuffle_override=True)
     
-    # Filter by category
     category_problems = [p for p in all_problems if p["category"] == category]
     return get_random_problems(category_problems, n=6, shuffle_override=True)
 
-# FIXED Recommended Problems Section with Randomization
 st.subheader("💡 Recommended Problems")
 
-# Randomization info
 current_seed = st.session_state.get('problem_shuffle_seed', get_week_seed())
 if st.session_state.get('problem_shuffle_seed'):
     st.info(f"🎲 Showing shuffled problems (Seed: {current_seed})")
 else:
     st.info(f"📅 Showing problems for Week {current_seed}")
 
-# Shuffle button
 col_shuffle1, col_shuffle2, col_shuffle3 = st.columns([1, 1, 2])
 with col_shuffle1:
     if st.button("🔀 Shuffle Problems"):
@@ -606,7 +552,6 @@ with col_shuffle2:
         st.session_state.problem_shuffle_seed = None
         st.rerun()
 
-# Always show problems - either based on weak areas or general
 if weak_areas and len(weak_areas) > 0:
     st.markdown("### 🎯 Focus Areas (Based on your weak areas)")
     for i, area in enumerate(weak_areas[:3]):
@@ -614,7 +559,6 @@ if weak_areas and len(weak_areas) > 0:
             problems = get_fallback_problems(area)
             
             if problems:
-                # Create a nice problem display
                 for j, problem in enumerate(problems):
                     col1, col2, col3, col4 = st.columns([1, 3, 1, 1])
                     
@@ -633,7 +577,6 @@ if weak_areas and len(weak_areas) > 0:
                         if 'url' in problem:
                             st.markdown(f"[🔗 Solve]({problem['url']})")
                 
-                # Quick action buttons
                 st.markdown("---")
                 col_action1, col_action2 = st.columns(2)
                 with col_action1:
@@ -663,19 +606,16 @@ else:
                 if 'url' in problem:
                     st.markdown(f"[🔗 Solve]({problem['url']})")
 
-# FIXED Study Schedule Section
 st.subheader("📅 This Week's Study Schedule")
 
-# Always show schedule
 days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 day_icons = ['🌟', '💪', '🎯', '🚀', '⚡', '🏆', '🔄']
 
 st.markdown("**✨ Personalized Weekly Study Plan**")
 
 for i, day in enumerate(days):
-    with st.expander(f"{day_icons[i]} {day}", expanded=(i==0)):  # Today expanded
+    with st.expander(f"{day_icons[i]} {day}", expanded=(i==0)):
         
-        # Use weak areas if available, otherwise general topics
         if weak_areas:
             topic = weak_areas[i % len(weak_areas)]
             difficulty = ["Easy", "Easy", "Medium", "Medium", "Medium", "Hard", "Review"][i]
@@ -711,7 +651,6 @@ for i, day in enumerate(days):
                     st.markdown(f"- 🚀 **Mid-week Boost:** Extra practice session")
         
         with col2:
-            # Progress tracking
             st.markdown("**📊 Progress**")
             completion_key = f"day_{day}_completed"
             completed = st.checkbox("✅ Completed", key=completion_key)
@@ -721,7 +660,6 @@ for i, day in enumerate(days):
             else:
                 st.info("⏳ Pending")
             
-            # Quick problem links
             if topic != "Mixed Review":
                 st.markdown("**🔗 Quick Start**")
                 topic_problems = get_fallback_problems(topic)
@@ -729,18 +667,15 @@ for i, day in enumerate(days):
                     first_problem = topic_problems[0]
                     st.markdown(f"[🚀 {first_problem['title']}]({first_problem.get('url', '#')})")
 
-# Fixed Sidebar Stats
 st.sidebar.markdown("### 📈 Quick Stats")
 st.sidebar.metric("Total Problems", user_stats.get('total_problems', 0))
 st.sidebar.metric("This Week", user_stats.get('this_week', 0)) 
-# Fix the current streak issue
 current_streak = user_stats.get('current_streak', 0)
 if isinstance(current_streak, (int, float)):
     st.sidebar.metric("Current Streak", f"{int(current_streak)} days")
 else:
     st.sidebar.metric("Current Streak", "0 days")
 
-# Progress to next milestone
 total_problems = user_stats.get('total_problems', 0)
 if total_problems > 0:
     next_milestone = ((total_problems // 10) + 1) * 10

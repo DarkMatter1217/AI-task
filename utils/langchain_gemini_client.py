@@ -17,7 +17,7 @@ class LangChainGeminiClient:
         self.llm = ChatGoogleGenerativeAI(
             model=st.secrets.get("GOOGLE_MODEL_NAME", "gemini-2.5-flash"),
             temperature=0.1,
-            max_tokens=2048,
+            max_tokens=6000,
             timeout=30,
             max_retries=2
         )
@@ -132,7 +132,6 @@ List 2-3 LeetCode problems that use the same pattern with clickable links.
                 "detected_patterns": ", ".join(detected_patterns)
             })
 
-            # Ensure response is meaningful
             if not response or len(response.strip()) < 200:
                 return self._fallback_pattern_output(detected_patterns,error=None)
 
@@ -160,9 +159,6 @@ You can retry with a simpler version of your code for better results.
 """
 
     def generate_learning_path(self, user_data: Dict) -> str:
-        """
-        Generate a personalized 7-day learning path with LeetCode problem suggestions.
-        """
         learning_prompt = ChatPromptTemplate.from_template("""
 You are a coding mentor.
 
